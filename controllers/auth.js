@@ -1,13 +1,64 @@
+const passport = require("passport");
+const bcrypt = require("bcrypt");
+
+const User = require("../models/user");
+
 const signup = async (req, res, next) => {
-  res.send("Sign up");
+  const { first, last, email, password } = req.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      name: { first, last },
+      email,
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    res.status(200).json({
+      success: { message: "A new user is created" },
+      data: { user: newUser },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const login = (req, res, next) => {
-  res.send("Log in");
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+
+    if (!user) {
+      throw new Error(info.message);
+    }
+
+    req.login(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+    });
+
+    res.status(200).json({
+      success: { message: "Login successful" },
+      data: { user: req.user },
+    });
+  })(req, res, next);
 };
 
 const logout = (req, res, next) => {
-  res.send("Log out");
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+  });
+
+  res.status(200).json({
+    success: { message: "Logout successful" },
+  });
 };
 
-module.exports = {signup, login, logout}
+module.exports = { signup, login, logout };

@@ -1,7 +1,9 @@
 require("dotenv").config();
+require("./config/passport");
 
 const express = require("express");
 const session = require("express-session");
+const passport = require("passport");
 
 const helmet = require("helmet");
 const cors = require("cors");
@@ -25,6 +27,9 @@ app.use(
     secret: process.env.SESSION_SECRET,
   })
 );
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api/auth", authRouter);
 
