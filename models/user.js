@@ -42,7 +42,11 @@ const userSchema = new Schema(
     roles: [{ type: String }],
     archived: { type: Boolean, default: false },
     strategy: {
-      google: { id: { type: String, default: "" } },
+      google: {
+        id: { type: String, default: "" },
+        token: { type: String, default: "" },
+        email: { type: String, default: "" },
+      },
     },
   },
   { timestamps: true }
