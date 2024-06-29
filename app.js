@@ -1,4 +1,4 @@
-require('dotenv').config()
+require("dotenv").config();
 
 const express = require("express");
 const session = require("express-session");
@@ -6,6 +6,8 @@ const session = require("express-session");
 const helmet = require("helmet");
 const cors = require("cors");
 const morgan = require("morgan");
+
+const authRouter = require("./routes/auth");
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use(
     secret: process.env.SESSION_SECRET,
   })
 );
+
+app.use("/api/auth", authRouter);
 
 app.get("/", (req, res, next) => {
   res.send("Initial start page");
