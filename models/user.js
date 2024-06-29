@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 
 const { Schema } = mongoose;
 
-const { validationRules } = require("../data/constants");
-
 const userSchema = new Schema(
   {
     name: {
@@ -22,22 +20,10 @@ const userSchema = new Schema(
       required: true,
       trim: true,
       lowercase: true,
-      match: [
-        validationRules.EMAIL_REGEX,
-        validationRules.INVALID_EMAIL_MESSAGE,
-      ],
     },
     password: {
       type: String,
       required: true,
-      match: [
-        validationRules.PASSWORD_REGEX,
-        validationRules.INVALID_PASSWORD_MESSAGE,
-      ],
-      minLength: [
-        validationRules.PASSWORD_LENGTH,
-        validationRules.INVALID_PASSWORD_LENGTH_MESSAGE,
-      ],
     },
     roles: [{ type: String }],
     archived: { type: Boolean, default: false },
