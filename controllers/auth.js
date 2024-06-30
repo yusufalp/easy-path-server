@@ -1,9 +1,14 @@
 const passport = require("passport");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 
 const { validationRules } = require("../data/constants");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../utils/tokens");
 
 const signup = async (req, res, next) => {
   const { first, last, email, password } = req.body;
@@ -35,9 +40,12 @@ const signup = async (req, res, next) => {
 
     await newUser.save();
 
+    // Exclude the hashed password from the response
+    const { password, ...userWithoutPassword } = newUser.toObject();
+
     res.status(200).json({
-      success: { message: "A new user is created" },
-      data: { user: newUser },
+      success: { message: "A new user is created." },
+      data: { user: userWithoutPassword },
     });
   } catch (error) {
     next(error);
@@ -45,38 +53,84 @@ const signup = async (req, res, next) => {
 };
 
 const login = (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
-
-    if (!user) {
-      throw new Error(info.message);
-    }
-
-    req.login(user, (err) => {
+  passport.authenticate("local", { session: false }, (err, user, info) => {
+    try {
       if (err) {
         return next(err);
       }
-    });
 
-    res.status(200).json({
-      success: { message: "Login successful" },
-      data: { user: req.user },
-    });
+      if (!user) {
+        throw new Error(info.message);
+      }
+
+      req.login(user, { session: false }, (err) => {
+        if (err) {
+          return next(err);
+        }
+
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "Strict",
+        });
+
+        res.status(200).json({
+          success: { message: "Login successful." },
+          data: { user: req.user, accessToken },
+        });
+      });
+    } catch (err) {
+      return next(err);
+    }
   })(req, res, next);
 };
 
 const logout = (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-  });
+  try {
+    res.clearCookie("refreshToken");
+    req.logout((err) => {
+      if (err) {
+        return next(err);
+      }
 
-  res.status(200).json({
-    success: { message: "Logout successful" },
-  });
+      res.status(200).json({
+        success: { message: "Logout successful." },
+      });
+    });
+  } catch (err) {
+    return next(err);
+  }
 };
 
-module.exports = { signup, login, logout };
+const refreshToken = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      throw new Error("No refresh token is provided");
+    }
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+      if (err) {
+        return next(err);
+      }
+
+      const accessToken = generateAccessToken({
+        _id: user._id,
+        email: user.email,
+      });
+
+      res.status(200).json({
+        success: { message: "Access token is generated " },
+        data: { accessToken },
+      });
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { signup, login, logout, refreshToken };
