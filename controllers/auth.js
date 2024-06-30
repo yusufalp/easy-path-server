@@ -41,7 +41,8 @@ const signup = async (req, res, next) => {
     await newUser.save();
 
     // Exclude the hashed password from the response
-    const { password, ...userWithoutPassword } = newUser.toObject();
+    const userWithoutPassword = newUser;
+    userWithoutPassword.password = undefined;
 
     res.status(200).json({
       success: { message: "A new user is created." },
@@ -77,9 +78,13 @@ const login = (req, res, next) => {
           sameSite: "Strict",
         });
 
+        // Exclude the hashed password from the response
+        const userWithoutPassword = req.user;
+        userWithoutPassword.password = undefined;
+
         res.status(200).json({
           success: { message: "Login successful." },
-          data: { user: req.user, accessToken },
+          data: { user: userWithoutPassword, accessToken },
         });
       });
     } catch (err) {
