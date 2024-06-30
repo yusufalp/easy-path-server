@@ -41,8 +41,14 @@ app.get("/", (req, res, next) => {
 app.use((err, req, res, next) => {
   console.error("An error occurred:", err);
 
+  if (err.code === 11000) {
+    return res.status(400).json({
+      error: { message: "An account with this email exist." },
+    });
+  }
+
   return res.status(err.code || 500).json({
-    error: { message: err.message || "Internal server error" },
+    error: { message: err.message || "Internal server error." },
   });
 });
 
