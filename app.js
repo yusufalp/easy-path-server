@@ -1,5 +1,6 @@
 require("dotenv").config();
 require("./config/passport");
+require("./config/database");
 
 const express = require("express");
 const session = require("express-session");
@@ -15,7 +16,7 @@ const app = express();
 
 app.use(helmet());
 app.use(cors());
-app.use(morgan("combined"));
+app.use(morgan("dev"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
