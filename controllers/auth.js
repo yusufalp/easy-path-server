@@ -3,10 +3,28 @@ const bcrypt = require("bcrypt");
 
 const User = require("../models/user");
 
+const { validationRules } = require("../data/constants");
+
 const signup = async (req, res, next) => {
   const { first, last, email, password } = req.body;
 
   try {
+    if (!first || !email || !password) {
+      throw new Error("Missing required fields.");
+    }
+
+    if (!email.match(validationRules.EMAIL_REGEX)) {
+      throw new Error(validationRules.INVALID_EMAIL_MESSAGE);
+    }
+
+    if (!password.match(validationRules.PASSWORD_REGEX)) {
+      throw new Error(validationRules.INVALID_PASSWORD_MESSAGE);
+    }
+
+    if (password.length < validationRules.PASSWORD_LENGTH) {
+      throw new Error(validationRules.INVALID_PASSWORD_LENGTH_MESSAGE);
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
