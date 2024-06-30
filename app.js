@@ -5,6 +5,7 @@ require("./config/database");
 const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
+const cookieParser = require("cookie-parser");
 
 const helmet = require("helmet");
 const cors = require("cors");
@@ -20,6 +21,8 @@ app.use(morgan("dev"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());
 
 app.use(
   session({
