@@ -48,8 +48,8 @@ const signup = async (req, res, next) => {
       success: { message: "A new user is created." },
       data: { user: userWithoutPassword },
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -133,9 +133,41 @@ const refreshToken = async (req, res, next) => {
         data: { accessToken },
       });
     });
-  } catch (error) {
-    return next(error);
+  } catch (err) {
+    return next(err);
   }
 };
 
-module.exports = { signup, login, logout, refreshToken };
+const googleAuthCallback = (req, res, next) => {
+  passport.authenticate("google", { session: false }, async (err, user) => {
+    try {
+      if (err || !user) {
+        throw new Error("Google authentication failed.");
+      }
+
+      const accessToken = generateAccessToken(user);
+      const refreshToken = generateRefreshToken(user);
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+      });
+
+      res.status(200).json({
+        success: { message: "User is authenticated" },
+        data: { user, accessToken },
+      });
+    } catch (err) {
+      return next(err);
+    }
+  })(req, res, next);
+};
+
+module.exports = {
+  signup,
+  login,
+  logout,
+  refreshToken,
+  googleAuthCallback,
+};
