@@ -42,16 +42,11 @@ passport.use(
         let user = await User.findOne({ "strategy.google.id": profile.id });
 
         if (!user) {
-          user = await User.findOne({ email: profile.email });
-        }
-
-        if (!user) {
           user = new User({
             name: {
               first: profile.name.givenName,
               last: profile.name.familyName,
             },
-            email: profile.emails[0].value,
             strategy: {
               google: {
                 id: profile.id,
@@ -60,9 +55,9 @@ passport.use(
               },
             },
           });
-        }
 
-        await user.save();
+          await user.save();
+        }
 
         return done(null, user);
       } catch (err) {
