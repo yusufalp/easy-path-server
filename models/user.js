@@ -24,7 +24,6 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     roles: [{ type: String }],
     archived: { type: Boolean, default: false },
