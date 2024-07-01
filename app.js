@@ -16,7 +16,13 @@ const authRouter = require("./routes/auth");
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  })
+);
 app.use(morgan("dev"));
 
 app.use(express.json());
