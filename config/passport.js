@@ -38,17 +38,14 @@ passport.use(
       callbackURL: "http://localhost:8080/api/auth/google/callback",
     },
     async (token, tokenSecret, profile, done) => {
-      console.log("profile :>> ", profile);
       try {
         let user = await User.findOne({ "strategy.google.id": profile.id });
 
         if (!user) {
-          console.log("this ran :>> ");
           user = await User.findOne({ email: profile.email });
         }
 
         if (!user) {
-          console.log("this ran too :>> ");
           user = new User({
             name: {
               first: profile.name.givenName,
@@ -64,8 +61,6 @@ passport.use(
             },
           });
         }
-
-        console.log("user :>> ", user);
 
         await user.save();
 
