@@ -47,6 +47,7 @@ passport.use(
               first: profile.name.givenName,
               last: profile.name.familyName,
             },
+            email: profile.emails[0].value,
             strategy: {
               google: {
                 id: profile.id,
