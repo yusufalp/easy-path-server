@@ -22,12 +22,12 @@ const signup = async (req, res, next) => {
       throw new Error(validationRules.INVALID_EMAIL_MESSAGE);
     }
 
-    if (!password.match(validationRules.PASSWORD_REGEX)) {
-      throw new Error(validationRules.INVALID_PASSWORD_MESSAGE);
-    }
-
     if (password.length < validationRules.PASSWORD_LENGTH) {
       throw new Error(validationRules.INVALID_PASSWORD_LENGTH_MESSAGE);
+    }
+
+    if (!password.match(validationRules.PASSWORD_REGEX)) {
+      throw new Error(validationRules.INVALID_PASSWORD_MESSAGE);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -138,11 +138,63 @@ const refreshToken = async (req, res, next) => {
   }
 };
 
+const resetPassword = async (req, res, next) => {
+  const { email, newPassword, confirmPassword } = req.body;
+
+  try {
+    if (newPassword !== confirmPassword) {
+      throw new Error("Passwords do not match!");
+    }
+
+    if (newPassword.length < validationRules.PASSWORD_LENGTH) {
+      throw new Error(validationRules.INVALID_PASSWORD_LENGTH_MESSAGE);
+    }
+
+    if (!newPassword.match(validationRules.PASSWORD_REGEX)) {
+      throw new Error(validationRules.INVALID_PASSWORD_MESSAGE);
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const hashedPassword = await bcrypt(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+
+    // Exclude the hashed password from the response
+    const userWithoutPassword = req.user;
+    userWithoutPassword.password = undefined;
+
+    res.status(200).json({
+      success: { message: "User is authenticated" },
+      data: { user, accessToken },
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 const googleAuthCallback = (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user) => {
     try {
       if (err || !user) {
         throw new Error("Google authentication failed.");
+      }
+
+      if (!user.password) {
+        return res.redirect("/reset-password");
       }
 
       const accessToken = generateAccessToken(user);
@@ -169,5 +221,6 @@ module.exports = {
   login,
   logout,
   refreshToken,
+  resetPassword,
   googleAuthCallback,
 };
