@@ -20,7 +20,7 @@ app.use(
   cors({
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    methods: ["OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"],
   })
 );
 app.use(morgan("dev"));
