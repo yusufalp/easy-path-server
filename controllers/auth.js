@@ -38,19 +38,11 @@ const signup = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    // Check if a user exists with a Google strategy and the same email
-    // Update password and email if it exists, create a new user if it does not
-    let user = await User.findOneAndUpdate(
-      { "strategy.google.email": email },
-      newUser,
-      { upsert: true, new: true }
-    );
-
-    await user.save();
+    await newUser.save();
 
     res.status(200).json({
       success: { message: "A new user is created." },
-      data: { user },
+      data: { user: newUser },
     });
   } catch (err) {
     next(err);
@@ -192,7 +184,7 @@ const resetPassword = async (req, res, next) => {
 
 const googleAuthCallback = (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user) => {
-    console.log('gooleAuthCB :>> ');
+    console.log("gooleAuthCB :>> ");
     try {
       if (err || !user) {
         throw new Error("Google authentication failed.");
