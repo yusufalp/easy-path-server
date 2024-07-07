@@ -184,7 +184,6 @@ const resetPassword = async (req, res, next) => {
 
 const googleAuthCallback = (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user) => {
-    console.log("gooleAuthCB :>> ");
     try {
       if (err || !user) {
         throw new Error("Google authentication failed.");
