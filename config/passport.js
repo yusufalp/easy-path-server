@@ -39,7 +39,12 @@ passport.use(
     },
     async (token, tokenSecret, profile, done) => {
       try {
-        let user = await User.findOne({ "strategy.google.id": profile.id });
+        let user = await User.findOne({
+          $or: [
+            { "strategy.google.id": profile.id },
+            { email: profile.emails[0].value },
+          ],
+        });
 
         if (!user) {
           user = new User({

@@ -18,7 +18,7 @@ router.post("/logout", logout);
 router.post("/refresh-token", refreshToken);
 router.post("/reset-password", resetPassword);
 
-router.get(
+router.post(
   "/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
