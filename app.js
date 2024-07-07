@@ -52,7 +52,7 @@ app.use((err, req, res, next) => {
 
   if (err.code === 11000) {
     return res.status(400).json({
-      error: { message: "An account with this email exist." },
+      error: { message: "There was a problem when signing up." },
     });
   }
 

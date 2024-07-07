@@ -40,9 +40,12 @@ const signup = async (req, res, next) => {
 
     await newUser.save();
 
+    const userWithoutPassword = Object.assign(newUser);
+    userWithoutPassword.password = undefined;
+
     res.status(200).json({
       success: { message: "A new user is created." },
-      data: { user: newUser },
+      data: { user: userWithoutPassword },
     });
   } catch (err) {
     next(err);
@@ -75,7 +78,7 @@ const login = (req, res, next) => {
         });
 
         // Exclude the hashed password from the response
-        const userWithoutPassword = req.user;
+        const userWithoutPassword = Object.assign(req.user);
         userWithoutPassword.password = undefined;
 
         res.status(200).json({
