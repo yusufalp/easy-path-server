@@ -73,7 +73,7 @@ const login = (req, res, next) => {
 
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
+          secure: true,
           sameSite: "Strict",
         });
 
@@ -94,11 +94,13 @@ const login = (req, res, next) => {
 
 const logout = (req, res, next) => {
   try {
-    res.clearCookie("refreshToken");
     req.logout((err) => {
       if (err) {
         return next(err);
       }
+
+      req.session.destroy();
+      res.clearCookie("refreshToken");
 
       res.status(200).json({
         success: { message: "Logout successful." },
