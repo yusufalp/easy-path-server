@@ -11,10 +11,10 @@ const {
 } = require("../utils/tokens");
 
 const signup = async (req, res, next) => {
-  const { first, last, email, password } = req.body;
+  const { first, last, email, password, role } = req.body;
 
   try {
-    if (!first || !email || !password) {
+    if (!first || !email || !password || !role) {
       throw new Error("Missing required fields.");
     }
 
@@ -36,6 +36,7 @@ const signup = async (req, res, next) => {
       name: { first, last },
       email,
       password: hashedPassword,
+      roles: [role],
     });
 
     await newUser.save();
