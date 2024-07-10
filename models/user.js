@@ -14,6 +14,10 @@ const userSchema = new Schema(
         type: String,
         trim: true,
       },
+      middle: {
+        type: String,
+        trim: true,
+      },
     },
     email: {
       type: String,
